@@ -5,12 +5,11 @@ describe("Fallback contract", function () {
     let fallbackContract;
     let owner;
     let addr1;
-    let addr2;
 
     beforeEach(async function () {
         [owner, addr1, addr2] = await ethers.getSigners();
         const Fallback = await ethers.getContractFactory("Fallback");
-        fallbackContract = await Fallback.deploy(); // Already deployed
+        fallbackContract = await Fallback.deploy(); 
     });
 
     it("should set deployer as initial owner and contribution", async function () {
@@ -36,16 +35,28 @@ describe("Fallback contract", function () {
     it("should change owner when contribution exceeds current owner's and fallback is triggered", async function () {
         const value = ethers.parseEther("0.0008");
     
+
         await fallbackContract.connect(addr1).contribute({ value });
     
+       
         await addr1.sendTransaction({
             to: fallbackContract.target,
             value: ethers.parseEther("0.0001"), 
         });
+
+        await fallbackContract.connect(addr1).withdraw();
+
     
         expect(await fallbackContract.owner()).to.equal(addr1.address);
     });
-    
+
+
+    it("should contract balance be zero" , async function() {
+        
+        let contractBalance= await ethers.provider.getBalance(fallbackContract);
+
+        expect(contractBalance).to.be.eq("0");
+    });
     
 
 });
